@@ -7,6 +7,8 @@ export default {
   getCourseTeacherTable: (gh, term) => axios.get('/api/courseTable', { params: { gh, term } }),
   getStudents: () => axios.get('/api/students'),
   getTerms: () => axios.get('/api/terms'),
+  getClasses: () => axios.get('/api/class'),
   getReportCard: (xh, term) => axios.get('/api/reportCard', { params: { xh, term }}),
-  postXuanKe: (data) => axios.post('/api/chooseCourse', data)
+  postXuanKe: (data) => axios.post('/api/chooseCourse', data),
+  postKaiKe: (data) => axios.post('/api/openCourse', data)
 }

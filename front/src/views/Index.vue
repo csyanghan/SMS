@@ -92,6 +92,52 @@
           <a-table v-show="activeKey === '4'" :columns="reportCardColumns" :dataSource="reportCardData" :rowKey="record => (record.kh)"></a-table>
           <ve-histogram :data="chartData" v-if="activeKey === '5'"></ve-histogram>
           <a-table v-show="activeKey === '6'" :columns="studentsColumns" :dataSource="studentsData" :rowKey="record => (record.xh)"></a-table>
+          <a-form
+            :form="formOpen"
+            @submit="handleSubmitOpen"
+            v-show="activeKey === '9'"
+          >
+            <a-form-item
+              label="课号"
+              :label-col="{ span: 2 }"
+              :wrapper-col="{ span: 6 }"
+            >
+              <a-select
+                v-decorator="[
+                  'kh',
+                  {rules: [{ required: true, message: '请输入课号' }]}
+                ]"
+                placeholder="课号"
+                @change="handleSelectChange"
+              >
+                <a-select-option v-for="item in classes" :key="item.kh" :value="item.kh">
+                  {{ item.km }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+            <a-form-item
+              label="上课时间"
+              :label-col="{ span: 2 }"
+              :wrapper-col="{ span: 6 }"
+            >
+              <a-input
+                v-decorator="[
+                  'sksj',
+                  {rules: [{ required: true, message: '请输入上课时间' }]}
+                ]"
+              />
+            </a-form-item>
+            <a-form-item
+              :wrapper-col="{ span: 8, offset: 2 }"
+            >
+              <a-button
+                type="primary"
+                html-type="submit"
+              >
+                Submit
+              </a-button>
+            </a-form-item>
+          </a-form>
           <a-table v-show="activeKey === '10'" :columns="openCoursesTeacherColumns" :dataSource="openCoursesTeacherData" :rowKey="record => (record.kh)"></a-table>
         </a-layout-content>
       </a-layout>
@@ -120,7 +166,9 @@ export default {
       studentsData: [],
       reportCardData: [],
       openCoursesTeacherData: [],
-      form: this.$form.createForm(this)
+      form: this.$form.createForm(this),
+      formOpen: this.$form.createForm(this),
+      classes: []
     }
   },
   computed: {
@@ -234,10 +282,35 @@ export default {
         }
       });
     },
+    handleSubmitOpen(e) {
+      e.preventDefault();
+      this.formOpen.validateFields((err, values) => {
+        if (!err) {
+          const { kh, sksj } = values;
+          api.postKaiKe({ kh, sksj, gh: this.userInfo.gh ,xq: this.nowTerm}).then(res => {
+            if(res.data.res.affectedRows === 1) {
+              this.$message.success('开课成功');
+              this.form.resetFields();
+            } else {
+              this.$message.error(res.data.res.message);
+              this.form.resetFields();
+            }
+          });
+        }
+      });
+    },
+    handleSelectChange(value) {
+      this.formOpen.setFieldsValue({
+        kh: value
+      });
+    }
   },
   mounted() {
     this.loadStudents();
     this.loadCourseTeacherTable();
+    api.getClasses().then(res => {
+      this.classes = res.data.res;
+    });
   },
 }
 </script>

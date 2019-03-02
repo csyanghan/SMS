@@ -53,9 +53,9 @@ DONE
 
 - GET /api/terms
 
-TODO
-
 - POST /api/chooseCourse    data: { xh, xq, kh, gh }
+
+TODO
 
 - POST /api/manageGrade     data: { list: [ { xh, kh, pscj, kscj, zpcj }] }
 

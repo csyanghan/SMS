@@ -87,4 +87,23 @@ router.post('/chooseCourse', async ctx => {
   };
 });
 
+router.post('/openCourse', async ctx => {
+  const params = ctx.request.body;
+  const res = await Sql.teacherOpenClass(params);
+  ctx.response.status = 200;
+  ctx.body = {
+    code: 200,
+    res
+  };
+});
+
+router.get('/class', async ctx => {
+  const res = await Sql.getClass();
+  ctx.response.status = 200;
+  ctx.body = {
+    code: 200,
+    res
+  };
+})
+
 module.exports = router;

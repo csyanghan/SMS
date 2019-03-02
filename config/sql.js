@@ -101,3 +101,21 @@ exports.chooseCourse = ({xh, xq, kh, gh}) => {
     return query(_sql, [xh, xq, kh, gh]);
   });
 }
+
+exports.teacherOpenClass = ({xq, kh, gh, sksj}) => {
+  const check = 'select * from openclass as o where o.xq = ? and o.kh = ? and o.gh = ?';
+  return query(check, [xq, kh, gh]).then(res => {
+    if (res.length) {
+      return {
+        message: '你已经开过这门课了'
+      }
+    }
+    const _sql = 'insert into openclass (xq, kh, gh, sksj) values (?, ?, ?, ?)';
+    return query(_sql, [xq, kh, gh, sksj]);
+  })
+}
+
+exports.getClass = () => {
+  const _sql = 'select c.kh, c.km from class as c';
+  return query(_sql);
+}
