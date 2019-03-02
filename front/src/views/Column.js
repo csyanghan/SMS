@@ -78,14 +78,38 @@ export const reportCardColumns = [
   },
   {
     title: '平时成绩',
-    dataIndex: 'pscj'
+    dataIndex: 'pscj',
+    customRender: (text) => {
+      return text ? text : '暂无';
+    }
   },
   {
     title: '考试成绩',
-    dataIndex: 'kscj'
+    dataIndex: 'kscj',
+    customRender: (text) => {
+      return text ? text : '暂无';
+    }
   },
   {
     title: '总评成绩',
-    dataIndex: 'zpcj'
+    dataIndex: 'zpcj',
+    customRender: (text) => {
+      return text ? text : '暂无';
+    }
   }
+];
+
+export const openCoursesTeacherColumns = [
+  {
+    title: '课号',
+    dataIndex: 'kh'
+  },
+  {
+    title: '课名',
+    dataIndex: 'km'
+  },
+  {
+    title: '上课时间',
+    dataIndex: 'sksj'
+  },
 ];

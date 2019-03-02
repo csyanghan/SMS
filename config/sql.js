@@ -53,13 +53,22 @@ exports.openCourse = (term) => {
 }
 
 // 课程表
-exports.courseTable = (xh, term) => {
+exports.courseTable = (data) => {
+  const { xh, term, gh } = data;
   const _sql = `
     select x.xq, x.kh, c.km, o.sksj, t.xm, t.gh from xuankeTable as x, openclass as o, class as c, teacher as t where
       x.kh=o.kh and x.gh=o.gh
       and c.kh=x.kh and t.gh = x.gh and x.xh = ? and x.xq = ?
   `;
-  return query(_sql, [xh, term]);
+  const __sql = `
+    select x.kh, c.km, x.sksj from openclass as x, class as c where c.kh = x.kh and x.gh = ? and x.xq = ?
+  `;
+  if (xh) {
+    return query(_sql, [xh, term]);
+  }
+  if (gh) {
+    return query(__sql, [gh, term]);
+  }
 }
 
 // 学生表
@@ -75,7 +84,20 @@ exports.terms = () => {
 }
 
 // 成绩单
-exports.reportCard =async (xh, term) => {
+exports.reportCard = (xh, term) => {
   const _sql = 'select  x.kh, c.km, x.pscj, x.kscj, x.zpcj from xuankeTable as x, class as c where x.xh = ? and x.xq = ? and x.kh=c.kh';
   return query(_sql, [xh, term]);
+}
+
+exports.chooseCourse = ({xh, xq, kh, gh}) => {
+  const check = 'select * from xuankeTable as x where x.xh = ? and x.xq = ? and x.kh = ? and x.gh = ?';
+  return query(check, [xh, xq, kh, gh]).then(res => {
+    if (res.length) {
+      return {
+        message: '已经存在这条记录了'
+      }
+    }
+    const _sql = 'insert into xuankeTable (xh, xq, kh, gh) values (?, ?, ?, ?)';
+    return query(_sql, [xh, xq, kh, gh]);
+  });
 }

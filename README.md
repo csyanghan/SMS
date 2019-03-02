@@ -26,7 +26,7 @@ yarn
 # 拉起后端
 node app.js
 
-cd frontend
+cd front
 
 yarn
 
@@ -35,4 +35,33 @@ yarn serve
 
 ```
 
+* API
+```js
+
+DONE
+
+- POST /api/login       data: { userName, password }
+
+- GET /api/openCourse   data: { params: { term } }
+
+// xh,gh 选传一个
+- GET /api/courseTable  data: { params: { xh, term, gh }}
+
+- GET /api/reportCard   data: { params: { xh, term }}
+
+- GET /api/students
+
+- GET /api/terms
+
+TODO
+
+- POST /api/chooseCourse    data: { xh, xq, kh, gh }
+
+- POST /api/manageGrade     data: { list: [ { xh, kh, pscj, kscj, zpcj }] }
+
+- POST /api/openCourse      data: { xq, kh, gh, sksj }
+
+
+
+```
 ©MIT

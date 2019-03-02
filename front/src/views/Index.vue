@@ -92,6 +92,7 @@
           <a-table v-show="activeKey === '4'" :columns="reportCardColumns" :dataSource="reportCardData" :rowKey="record => (record.kh)"></a-table>
           <ve-histogram :data="chartData" v-if="activeKey === '5'"></ve-histogram>
           <a-table v-show="activeKey === '6'" :columns="studentsColumns" :dataSource="studentsData" :rowKey="record => (record.xh)"></a-table>
+          <a-table v-show="activeKey === '10'" :columns="openCoursesTeacherColumns" :dataSource="openCoursesTeacherData" :rowKey="record => (record.kh)"></a-table>
         </a-layout-content>
       </a-layout>
     </a-layout-content>
@@ -104,7 +105,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import api from '@/api';
-import { openCoursesCoulmns, studentsColumns, reportCardColumns } from './Column';
+import { openCoursesCoulmns, studentsColumns, reportCardColumns, openCoursesTeacherColumns } from './Column';
 export default {
   name: 'index',
   data() {
@@ -113,10 +114,12 @@ export default {
       openCoursesCoulmns,
       studentsColumns,
       reportCardColumns,
+      openCoursesTeacherColumns,
       openCoursesData: [],
       courseTableData: [],
       studentsData: [],
       reportCardData: [],
+      openCoursesTeacherData: [],
       form: this.$form.createForm(this)
     }
   },
@@ -152,6 +155,10 @@ export default {
         columns,
         rows: data
       }
+    },
+    userInfoTerm () {
+      const { userInfo, nowTerm } = this;
+      return { userInfo, nowTerm };
     }
   },
   watch: {
@@ -159,6 +166,12 @@ export default {
       this.loadOpenCourse(newValue);
       this.loadCourseTable(newValue);
       this.loadReportCard(newValue);
+    },
+    userInfoTerm: {
+      handler: function (val) {
+        this.loadCourseTeacherTable(val.userInfo.gh, val.nowTerm);
+      },
+      deep: true
     }
   },
   methods: {
@@ -184,6 +197,11 @@ export default {
         });
       // }
     },
+    loadCourseTeacherTable(gh, term) {
+      api.getCourseTeacherTable(gh, term).then(res => {
+        this.openCoursesTeacherData = res.data.res;
+      })
+    },
     // 学生表
     loadStudents() {
       api.getStudents().then(res => {
@@ -203,13 +221,23 @@ export default {
       e.preventDefault();
       this.form.validateFields((err, values) => {
         if (!err) {
-          console.log('Received values of form: ', values);
+          const { kh, gh } = values;
+          api.postXuanKe({ kh, gh, xh: '1101',xq: this.nowTerm}).then(res => {
+            if(res.data.res.affectedRows === 1) {
+              this.$message.success('选课成功');
+              this.form.resetFields();
+            } else {
+              this.$message.error(res.data.res.message);
+              this.form.resetFields();
+            }
+          });
         }
       });
     },
   },
   mounted() {
     this.loadStudents();
+    this.loadCourseTeacherTable();
   },
 }
 </script>

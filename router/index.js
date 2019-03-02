@@ -27,10 +27,10 @@ router.get('/openCourse', async (ctx) => {
   };
 })
 
-// 课程表 每个学生选的课
+// 课程表 每个 学生选/老师上 的课
 router.get('/courseTable', async (ctx) => {
-  const { xh, term } = ctx.request.query;
-  const res = await Sql.courseTable(xh, term);
+  const { xh, term, gh } = ctx.request.query;
+  const res = await Sql.courseTable({ xh, term, gh });
   ctx.response.status = 200;
   ctx.body = {
     code: 200,
@@ -77,31 +77,14 @@ router.get('/terms', async ctx => {
   };
 })
 
-router.get('/d_score_dis', async (ctx) => {
-  await Sql.d_score_dis().then(res => {
-    ctx.response.status = 200;
-    const total = res.length;
-    const quekao = res.reduce((pre, cur) => {
-      if (!cur.zpcj) {
-        pre ++;
-      }
-      return pre;
-    }, 0);
-    ctx.body = {
-      code: 200,
-      res: {
-        total: total,
-        quekao: quekao,
-        list: res
-      }
-    }
-  }).catch(err => {
-    ctx.response.status = 500;
-    ctx.body = {
-      code: 500,
-      res: err
-    }
-  })
+router.post('/chooseCourse', async ctx => {
+  const params = ctx.request.body;
+  const res = await Sql.chooseCourse(params);
+  ctx.response.status = 200;
+  ctx.body = {
+    code: 200,
+    res
+  };
 });
 
 module.exports = router;
