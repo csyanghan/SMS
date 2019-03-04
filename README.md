@@ -55,12 +55,9 @@ DONE
 
 - POST /api/chooseCourse    data: { xh, xq, kh, gh }
 
-TODO
-
-- POST /api/manageGrade     data: { list: [ { xh, kh, pscj, kscj, zpcj }] }
-
 - POST /api/openCourse      data: { xq, kh, gh, sksj }
 
+- POST /api/manageGrade     data: { list: [ { xh, kh, pscj, kscj, zpcj }] }
 
 
 ```

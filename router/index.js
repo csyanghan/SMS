@@ -40,8 +40,8 @@ router.get('/courseTable', async (ctx) => {
 
 // 成绩单
 router.get('/reportCard', async ctx => {
-  const { xh, term } = ctx.request.query;
-  const res = await Sql.reportCard(xh, term);
+  const { xh, term, gh } = ctx.request.query;
+  const res = await Sql.reportCard(xh, term, gh);
   ctx.response.status = 200;
   ctx.body = {
     code: 200,
@@ -100,6 +100,15 @@ router.post('/openCourse', async ctx => {
 router.get('/class', async ctx => {
   const res = await Sql.getClass();
   ctx.response.status = 200;
+  ctx.body = {
+    code: 200,
+    res
+  };
+})
+
+router.post('/manageGrade', async ctx =>{
+  const params = ctx.request.body;
+  const res = await Sql.manageGrade(params);
   ctx.body = {
     code: 200,
     res

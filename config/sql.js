@@ -84,9 +84,17 @@ exports.terms = () => {
 }
 
 // 成绩单
-exports.reportCard = (xh, term) => {
+exports.reportCard = (xh, term, gh) => {
   const _sql = 'select  x.kh, c.km, x.pscj, x.kscj, x.zpcj from xuankeTable as x, class as c where x.xh = ? and x.xq = ? and x.kh=c.kh';
-  return query(_sql, [xh, term]);
+  if (xh) {
+    return query(_sql, [xh, term]);
+  }
+  const __sql = 'select s.xm, x.xh, x.kh, c.km, x.pscj, x.kscj, x.zpcj from xuankeTable as x, class as c, student as s where x.gh = ? and x.xq = ? and x.kh = c.kh and x.xh = s.xh';
+  if (gh) {
+    return query(__sql, [gh, term]).then(res => {
+      return res;
+    });
+  }
 }
 
 exports.chooseCourse = ({xh, xq, kh, gh}) => {
@@ -118,4 +126,9 @@ exports.teacherOpenClass = ({xq, kh, gh, sksj}) => {
 exports.getClass = () => {
   const _sql = 'select c.kh, c.km from class as c';
   return query(_sql);
+}
+
+exports.manageGrade = ({gh, xq, xh, kh, pscj, kscj, zpcj }) => {
+  const _sql = 'update xuankeTable set pscj = ?, kscj = ?, zpcj = ? where gh = ? and xq = ? and xh = ? and kh = ?';
+  return query(_sql, [pscj, kscj, zpcj, gh, xq, xh, kh]);
 }

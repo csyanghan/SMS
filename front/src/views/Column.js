@@ -99,6 +99,49 @@ export const reportCardColumns = [
   }
 ];
 
+export const reportCardTeacherColumns = [
+  {
+    title: '姓名',
+    dataIndex: 'xm',
+    scopedSlots: { customRender: 'xm'}
+  },
+  {
+    title: '学号',
+    dataIndex: 'xh',
+    scopedSlots: { customRender: 'xh' }
+  },
+  {
+    title: '课号',
+    dataIndex: 'kh',
+    scopedSlots: { customRender: 'kh'}
+  },
+  {
+    title: '课名',
+    dataIndex: 'km',
+    scopedSlots: { customRender: 'km' }
+  },
+  {
+    title: '平时成绩',
+    dataIndex: 'pscj',
+    scopedSlots: { customRender: 'pscj' }
+  },
+  {
+    title: '考试成绩',
+    dataIndex: 'kscj',
+    scopedSlots: { customRender: 'kscj' }
+  },
+  {
+    title: '总评成绩',
+    dataIndex: 'zpcj',
+    scopedSlots: { customRender: 'zpcj' }
+  },
+  {
+    title: '操作',
+    dataIndex: 'operation',
+    scopedSlots: { customRender: 'operation' },
+  }
+];
+
 export const openCoursesTeacherColumns = [
   {
     title: '课号',
@@ -113,3 +156,11 @@ export const openCoursesTeacherColumns = [
     dataIndex: 'sksj'
   },
 ];
+
+export const eidtorColumns = [
+  {
+    title: '姓名',
+    dataIndex: 'xm',
+    scopedSlots: { customRender: 'xm' }
+  }
+]

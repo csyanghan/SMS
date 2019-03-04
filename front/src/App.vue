@@ -26,6 +26,8 @@ export default {
           role
         });
       });
+    } else {
+      this.$router.push('/login');
     }
   }
 }

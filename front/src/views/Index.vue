@@ -4,7 +4,7 @@
       <div style="display: flex; justify-content: space-between">
         <h2 style="color: #fff">学生成绩管理系统</h2>
         <div style="display: flex; flex-direction: row;">
-          <div style="margin-right: 20px">欢迎 {{ name }}</div>
+          <div style="margin-right: 20px">欢迎 {{ name }} <a-icon @click="logout" type="logout" style="cursor: pointer"/></div>
           当前学期 &nbsp;&nbsp;
           <a-dropdown style="cursor: pointer">
             <span class="ant-dropdown-link">
@@ -92,6 +92,34 @@
           <a-table v-show="activeKey === '4'" :columns="reportCardColumns" :dataSource="reportCardData" :rowKey="record => (record.kh)"></a-table>
           <ve-histogram :data="chartData" v-if="activeKey === '5'"></ve-histogram>
           <a-table v-show="activeKey === '6'" :columns="studentsColumns" :dataSource="studentsData" :rowKey="record => (record.xh)"></a-table>
+          <div v-show="activeKey === '8'">
+            <a-table :columns="reportCardTeacherColumns" :dataSource="reportCradTeacherData" bordered :rowKey="record => (record.xh + record.kh)">
+              <template v-for="col in ['xm', 'xh', 'kh', 'km', 'pscj', 'kscj', 'zpcj']" :slot="col" slot-scope="text, record, index">
+                <div :key="col">
+                  <a-input
+                    v-if="record.editable"
+                    style="margin: -5px 0"
+                    :value="text"
+                    @change="e => handleChange(e.target.value, record, col)"
+                  />
+                  <template v-else>{{text}}</template>
+                </div>
+              </template>
+              <template slot="operation" slot-scope="text, record, index">
+                <div class='editable-row-operations'>
+                  <span v-if="record.editable">
+                    <a @click="() => save(record)">Save </a>
+                    <a-popconfirm title='Sure to cancel?' @confirm="() => cancel(record)">
+                      <a> Cancel</a>
+                    </a-popconfirm>
+                  </span>
+                  <span v-else>
+                    <a @click="() => edit(record)">Edit</a>
+                  </span>
+                </div>
+              </template>
+            </a-table>
+          </div>
           <a-form
             :form="formOpen"
             @submit="handleSubmitOpen"
@@ -151,7 +179,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import api from '@/api';
-import { openCoursesCoulmns, studentsColumns, reportCardColumns, openCoursesTeacherColumns } from './Column';
+import { openCoursesCoulmns, studentsColumns, reportCardColumns, openCoursesTeacherColumns, reportCardTeacherColumns } from './Column';
 export default {
   name: 'index',
   data() {
@@ -161,11 +189,14 @@ export default {
       studentsColumns,
       reportCardColumns,
       openCoursesTeacherColumns,
+      reportCardTeacherColumns,
       openCoursesData: [],
       courseTableData: [],
       studentsData: [],
       reportCardData: [],
       openCoursesTeacherData: [],
+      reportCradTeacherData: [],
+      cacheData: [],
       form: this.$form.createForm(this),
       formOpen: this.$form.createForm(this),
       classes: []
@@ -303,6 +334,79 @@ export default {
       this.formOpen.setFieldsValue({
         kh: value
       });
+    },
+    handleChange (value, record, column) {
+      const newData = JSON.parse(JSON.stringify(this.reportCradTeacherData));
+      const target = newData.filter(item => {
+        if (record.kh === item.kh && record.xh === item.xh) {
+          return true
+        }
+      })[0];
+      if (target) {
+        target[column] = value
+        this.reportCradTeacherData = newData
+      }
+    },
+    edit(record) {
+      const newData = JSON.parse(JSON.stringify(this.reportCradTeacherData));
+      const target = newData.filter(item => {
+        if (record.kh === item.kh && record.xh === item.xh) {
+          return true
+        }
+      })[0];
+      if(target) {
+        target.editable = true;
+        this.reportCradTeacherData = newData;
+      }
+    },
+    save(record) {
+      const newData = JSON.parse(JSON.stringify(this.reportCradTeacherData));
+      const target = newData.filter(item => {
+        if (record.kh === item.kh && record.xh === item.xh) {
+          return true
+        }
+      })[0];
+      if (target) {
+        delete target.editable
+        this.reportCradTeacherData = newData
+        this.cacheData = JSON.parse(JSON.stringify(this.reportCradTeacherData));
+        // 发请求
+        const params = {
+          gh: this.userInfo.gh,
+          xq: this.nowTerm,
+          xh: target.xh,
+          kh: target.kh,
+          pscj: target.pscj,
+          kscj: target.kscj,
+          zpcj: target.zpcj
+        };
+        api.postManageGrade(params).then(res => {
+          console.log(res, 'manage');
+          this.$message.success("修改成功");
+        });
+      }
+    },
+    cancel(record) {
+      const newData = JSON.parse(JSON.stringify(this.reportCradTeacherData));
+      const target = newData.filter(item => {
+        if (record.kh === item.kh && record.xh === item.xh) {
+          return true
+        }
+      })[0];
+      if (target) {
+        Object.assign(target, this.cacheData.filter(item => {
+          if (record.kh === item.kh && record.xh === item.xh) {
+            return true;
+          }
+        })[0]);
+        delete target.editable
+        this.reportCradTeacherData = newData
+      }
+    },
+    logout() {
+      sessionStorage.removeItem('accessToken');
+      this.$message.success('退出登录成功');
+      this.$router.push('/login');
     }
   },
   mounted() {
@@ -311,6 +415,10 @@ export default {
     api.getClasses().then(res => {
       this.classes = res.data.res;
     });
+    api.getReportCardTeacher('0101', '2013-2014 秋季').then(res => {
+      this.cacheData = res.data.res;
+      this.reportCradTeacherData = res.data.res;
+    })
   },
 }
 </script>
