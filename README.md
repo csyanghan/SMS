@@ -21,6 +21,16 @@ git clone git@github.com:Ctum/SMS.git
 
 cd SMS
 
+touch config.json
+
+/**
+写入 config 像下面
+{
+  "host": "your database ip address",
+  "password": "your password"
+}
+**/
+
 yarn
 
 # 拉起后端
@@ -47,7 +57,9 @@ DONE
 // xh,gh 选传一个
 - GET /api/courseTable  data: { params: { xh, term, gh }}
 
-- GET /api/reportCard   data: { params: { xh, term }}
+// xh,gh 选传一个
+// gh 表示这个老师某个学期所教学生的成绩单
+- GET /api/reportCard   data: { params: { xh, term, gh }}
 
 - GET /api/students
 
