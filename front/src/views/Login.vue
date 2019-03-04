@@ -68,6 +68,8 @@ export default {
               role
             });
             this.$router.push('/');
+          }).catch(() => {
+            this.$message.error("用户名或密码错误");
           });
         } else {
           this.$message.error(err);

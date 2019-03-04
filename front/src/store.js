@@ -21,6 +21,12 @@ export default new Vuex.Store({
     },
     setTerm(state, payload) {
       state.nowTerm = payload.nowTerm;
+    },
+    clearAll(state) {
+      state.nowTerm = '';
+      state.userInfo = {};
+      state.role = '';
+      state.terms = [];
     }
   },
   getters: {

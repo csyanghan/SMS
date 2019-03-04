@@ -9,13 +9,6 @@ import api from '@/api';
 export default {
   name: 'app',
   mounted() {
-    api.getTerms().then(res => {
-      const terms = res.data.res;
-      this.$store.commit('initTerm', {
-        terms,
-        nowTerm: terms[terms.length-1]
-      });
-    });
     if (sessionStorage.getItem('accessToken')) {
       api.login({
         userName: sessionStorage.getItem('accessToken')

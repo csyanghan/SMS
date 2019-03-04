@@ -73,4 +73,18 @@ DONE
 
 
 ```
+
+* 合法用户
+
+查看 [sql](./config/school.sql)中的`student`和`teacher`表， 使用`xh`或`gh`登录，密码任意，但不能为空
+
+eg:
+
+{
+  username: 1101,
+  password: 1101
+}
+
+为学生`李明`账号
+
 ©MIT

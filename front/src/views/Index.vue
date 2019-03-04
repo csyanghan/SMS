@@ -24,12 +24,12 @@
         <a-layout-sider width="200" style="background: #fff">
           <a-menu
             mode="inline"
-            :defaultSelectedKeys="['1']"
+            :defaultSelectedKeys="['1', '6']"
             :defaultOpenKeys="['sub1', 'sub2']"
             style="height: 100%"
             @click="clickItem"
           >
-            <a-sub-menu key="sub1">
+            <a-sub-menu key="sub1" v-if="!isTeacher">
               <span slot="title"><a-icon type="user" />课程信息与选课</span>
               <a-menu-item key="1">开课表</a-menu-item>
               <a-menu-item key="2">课程表</a-menu-item>
@@ -37,7 +37,7 @@
               <a-menu-item key="4">学生成绩单</a-menu-item>
               <a-menu-item key="5">成绩分布情况</a-menu-item>
             </a-sub-menu>
-            <a-sub-menu key="sub2">
+            <a-sub-menu key="sub2" v-if="isTeacher">
               <span slot="title"><a-icon type="user" />课程与成绩管理</span>
               <a-menu-item key="6">学生表</a-menu-item>
               <a-menu-item key="8">成绩管理</a-menu-item>
@@ -180,6 +180,7 @@
 import { mapGetters } from 'vuex';
 import api from '@/api';
 import { openCoursesCoulmns, studentsColumns, reportCardColumns, openCoursesTeacherColumns, reportCardTeacherColumns } from './Column';
+import { judgeJSObjectIsNull } from './util';
 export default {
   name: 'index',
   data() {
@@ -215,6 +216,9 @@ export default {
       }
     },
     isTeacher() {
+      if (this.role === 'teacher') {
+        this.activeKey = '6';
+      }
       return this.role === 'teacher';
     },
     chartData() {
@@ -241,14 +245,19 @@ export default {
     }
   },
   watch: {
-    nowTerm(newValue) {
-      this.loadOpenCourse(newValue);
-      this.loadCourseTable(newValue);
-      this.loadReportCard(newValue);
-    },
     userInfoTerm: {
       handler: function (val) {
-        this.loadCourseTeacherTable(val.userInfo.gh, val.nowTerm);
+        console.log('this function', val)
+        if (val.nowTerm && !judgeJSObjectIsNull(val.userInfo) && val.userInfo.gh) {
+          this.loadCourseTeacherTable(val.userInfo.gh, val.nowTerm);
+          this.loadReportCardTeacher(val.userInfo.gh, val.nowTerm);
+          this.loadStudents();
+        }
+        if(val.nowTerm && !judgeJSObjectIsNull(val.userInfo) && val.userInfo.xh) {
+          this.loadOpenCourse(val.nowTerm);
+          this.loadCourseTable(val.nowTerm);
+          this.loadReportCard(val.nowTerm);
+        }
       },
       deep: true
     }
@@ -270,16 +279,18 @@ export default {
     },
     // 学生课程表
     loadCourseTable(term) {
-      // if (this.isTeacher) {
-        api.getCourseTable('1101', this.nowTerm).then(res => {
+      if (!this.isTeacher) {
+        api.getCourseTable(this.userInfo.xh, this.nowTerm).then(res => {
           this.courseTableData = res.data.res;
         });
-      // }
+      }
     },
     loadCourseTeacherTable(gh, term) {
-      api.getCourseTeacherTable(gh, term).then(res => {
-        this.openCoursesTeacherData = res.data.res;
-      })
+      if (this.isTeacher) {
+        api.getCourseTeacherTable(gh, term).then(res => {
+          this.openCoursesTeacherData = res.data.res;
+        })
+      }
     },
     // 学生表
     loadStudents() {
@@ -289,11 +300,17 @@ export default {
     },
     // 成绩报告表
     loadReportCard(term) {
-      // if (this.isTeacher) {
-        api.getReportCard('1101', term).then(res => {
+      if (!this.isTeacher) {
+        api.getReportCard(this.userInfo.xh, term).then(res => {
           this.reportCardData = res.data.res;
         });
-      // }
+      }
+    },
+    loadReportCardTeacher(gh, xq) {
+      api.getReportCardTeacher(gh, xq).then(res => {
+        this.cacheData = res.data.res;
+        this.reportCradTeacherData = res.data.res;
+      })
     },
     // 选课表单提交
     handleSubmit (e) {
@@ -301,10 +318,12 @@ export default {
       this.form.validateFields((err, values) => {
         if (!err) {
           const { kh, gh } = values;
-          api.postXuanKe({ kh, gh, xh: '1101',xq: this.nowTerm}).then(res => {
+          api.postXuanKe({ kh, gh, xh: this.userInfo.xh ,xq: this.nowTerm}).then(res => {
             if(res.data.res.affectedRows === 1) {
               this.$message.success('选课成功');
               this.form.resetFields();
+              this.loadCourseTable(this.nowTerm);
+              this.loadReportCard(this.nowTerm);
             } else {
               this.$message.error(res.data.res.message);
               this.form.resetFields();
@@ -321,10 +340,11 @@ export default {
           api.postKaiKe({ kh, sksj, gh: this.userInfo.gh ,xq: this.nowTerm}).then(res => {
             if(res.data.res.affectedRows === 1) {
               this.$message.success('开课成功');
-              this.form.resetFields();
+              this.formOpen.resetFields();
+              this.loadCourseTeacherTable(this.userInfo.gh, this.nowTerm);
             } else {
               this.$message.error(res.data.res.message);
-              this.form.resetFields();
+              this.formOpen.resetFields();
             }
           });
         }
@@ -404,21 +424,23 @@ export default {
       }
     },
     logout() {
+      this.$store.commit('clearAll');
       sessionStorage.removeItem('accessToken');
       this.$message.success('退出登录成功');
       this.$router.push('/login');
     }
   },
   mounted() {
-    this.loadStudents();
-    this.loadCourseTeacherTable();
     api.getClasses().then(res => {
       this.classes = res.data.res;
     });
-    api.getReportCardTeacher('0101', '2013-2014 秋季').then(res => {
-      this.cacheData = res.data.res;
-      this.reportCradTeacherData = res.data.res;
-    })
+    api.getTerms().then(res => {
+      const terms = res.data.res;
+      this.$store.commit('initTerm', {
+        terms,
+        nowTerm: terms[terms.length-1]
+      });
+    });
   },
 }
 </script>
