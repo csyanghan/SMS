@@ -1,4 +1,5 @@
 import axios from 'axios';
+axios.defaults.baseURL = 'http://hysite.xin:3456';
 
 export default {
   login: (data) => axios.post('/api/login', data),
