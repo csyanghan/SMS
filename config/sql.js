@@ -97,7 +97,8 @@ exports.reportCard = (xh, term, gh) => {
   }
 }
 
-exports.chooseCourse = ({xh, xq, kh, gh}) => {
+let chooseCourse = null;
+exports.chooseCourse = chooseCourse = ({xh, xq, kh, gh}) => {
   const check = 'select * from xuankeTable as x where x.xh = ? and x.xq = ? and x.kh = ? and x.gh = ?';
   return query(check, [xh, xq, kh, gh]).then(res => {
     if (res.length) {
@@ -109,6 +110,18 @@ exports.chooseCourse = ({xh, xq, kh, gh}) => {
     return query(_sql, [xh, xq, kh, gh]);
   });
 }
+
+exports.dropCourse = async ({xh, xq, tkh, tgh}) => {
+  const res = await chooseCourse({xh, xq, kh: tkh, gh: tgh});
+  if(res.message === '已经存在这条记录了') {
+    const _sql = 'delete from xuankeTable where xh=? and xq = ? and kh = ? and gh = ?';
+    return query(_sql, [xh, xq, tkh, tgh]);
+  } else {
+    return {
+      message: '你没有这条选课记录'
+    }
+  }
+};
 
 exports.teacherOpenClass = ({xq, kh, gh, sksj}) => {
   const check = 'select * from openclass as o where o.xq = ? and o.kh = ? and o.gh = ?';

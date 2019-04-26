@@ -4,7 +4,7 @@
   "main": "app.js",
   "license": "MIT",
   "scripts": {
-    "dev": "node app.js"
+    "dev": "nodemon --watch config --watch router app.js"
   },
   "dependencies": {
     "koa": "^2.6.2",
@@ -14,5 +14,8 @@
     "koa-static": "^5.0.0",
     "mysql2": "^1.6.4",
     "sequelize": "^4.42.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.11"
   }
 }

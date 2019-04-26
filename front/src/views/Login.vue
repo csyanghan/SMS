@@ -1,4 +1,5 @@
 <template>
+  <div class="bg">
   <div class="login-container">
     <h1>登录</h1>
     <a-form
@@ -47,6 +48,7 @@
       </a-button>
     </a-form>
   </div>
+  </div>
 </template>
 
 <script>
@@ -84,6 +86,13 @@ export default {
 </script>
 
 <style lang="less" scoped>
+
+.bg {
+  height: 100%;
+  background-image: url('../assets/lib.jpg');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
 
 .login-container {
   width:500px;

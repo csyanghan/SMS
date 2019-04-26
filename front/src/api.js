@@ -1,5 +1,5 @@
 import axios from 'axios';
-axios.defaults.baseURL = 'http://hysite.xin:3456';
+// axios.defaults.baseURL = 'http://hysite.xin:4396';
 
 export default {
   login: (data) => axios.post('/api/login', data),
@@ -13,5 +13,6 @@ export default {
   getReportCardTeacher: (gh, term) => axios.get('/api/reportCard', { params: { gh, term }}),
   postXuanKe: (data) => axios.post('/api/chooseCourse', data),
   postKaiKe: (data) => axios.post('/api/openCourse', data),
-  postManageGrade: (data) => axios.post('/api/manageGrade', data)
+  postManageGrade: (data) => axios.post('/api/manageGrade', data),
+  dropCourse: (data) => axios.post('/api/dropCourse', data)
 }

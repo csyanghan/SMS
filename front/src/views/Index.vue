@@ -34,6 +34,7 @@
               <a-menu-item key="1">开课表</a-menu-item>
               <a-menu-item key="2">课程表</a-menu-item>
               <a-menu-item key="3">选课</a-menu-item>
+              <a-menu-item key="31">退课</a-menu-item>
               <a-menu-item key="4">学生成绩单</a-menu-item>
               <a-menu-item key="5">成绩分布情况</a-menu-item>
             </a-sub-menu>
@@ -47,8 +48,8 @@
           </a-menu>
         </a-layout-sider>
         <a-layout-content :style="{ padding: '0 24px', minHeight: '280px' }">
-          <a-table v-show="activeKey === '1'" :columns="openCoursesCoulmns" :dataSource="openCoursesData" :rowKey="record => (record.kh + record.xm)"></a-table>
-          <a-table v-show="activeKey === '2'" :columns="openCoursesCoulmns" :dataSource="courseTableData" :rowKey="record => (record.kh + record.xm)"></a-table>
+          <a-table v-show="activeKey === '1'" :columns="openCoursesCoulmns" :dataSource="openCoursesData" :rowKey="record => (record.kh + record.gh)"></a-table>
+          <a-table v-show="activeKey === '2'" :columns="openCoursesCoulmns" :dataSource="courseTableData" :rowKey="record => (record.kh + record.gh)"></a-table>
           <a-form
             :form="form"
             @submit="handleSubmit"
@@ -89,7 +90,47 @@
               </a-button>
             </a-form-item>
           </a-form>
-          <a-table v-show="activeKey === '4'" :columns="reportCardColumns" :dataSource="reportCardData" :rowKey="record => (record.kh)"></a-table>
+          <a-form
+            :form="formDrop"
+            @submit="handleDropCourse"
+            v-show="activeKey === '31'"
+          >
+            <a-form-item
+              label="课号"
+              :label-col="{ span: 2 }"
+              :wrapper-col="{ span: 6 }"
+            >
+              <a-input
+                v-decorator="[
+                  'tkh',
+                  {rules: [{ required: true, message: '请输入课程名' }]}
+                ]"
+              />
+            </a-form-item>
+            <a-form-item
+              label="教师号"
+              :label-col="{ span: 2 }"
+              :wrapper-col="{ span: 6 }"
+            >
+              <a-input
+                v-decorator="[
+                  'tgh',
+                  {rules: [{ required: true, message: '请输入教师工号' }]}
+                ]"
+              />
+            </a-form-item>
+            <a-form-item
+              :wrapper-col="{ span: 8, offset: 2 }"
+            >
+              <a-button
+                type="primary"
+                html-type="submit"
+              >
+                Submit
+              </a-button>
+            </a-form-item>
+          </a-form>
+          <a-table v-show="activeKey === '4'" :columns="reportCardColumns" :dataSource="reportCardData" :rowKey="record => (record.kh + record.zpcj)"></a-table>
           <ve-histogram :data="chartData" v-if="activeKey === '5'"></ve-histogram>
           <a-table v-show="activeKey === '6'" :columns="studentsColumns" :dataSource="studentsData" :rowKey="record => (record.xh)"></a-table>
           <div v-show="activeKey === '8'">
@@ -177,6 +218,22 @@
 </template>
 
 <script>
+function mySort(a, b) {
+  let terms = ['秋季', '冬季', '春季', '夏季'];
+  const [year, term] = a.split(' ');
+  const [year1, term1] = b.split(' ');
+  if(year < year1) {
+    return -1;
+  } else if (year===year1) {
+    if(terms.indexOf(term) < terms.indexOf(term1)) {
+      return -1;
+    } else {
+      return 1;
+    }
+  } else {
+    return 1;
+  }
+}
 import { mapGetters } from 'vuex';
 import api from '@/api';
 import { openCoursesCoulmns, studentsColumns, reportCardColumns, openCoursesTeacherColumns, reportCardTeacherColumns } from './Column';
@@ -200,6 +257,7 @@ export default {
       cacheData: [],
       form: this.$form.createForm(this),
       formOpen: this.$form.createForm(this),
+      formDrop: this.$form.createForm(this),
       classes: []
     }
   },
@@ -332,6 +390,26 @@ export default {
         }
       });
     },
+    // 退课
+    handleDropCourse(e) {
+      e.preventDefault();
+      this.formDrop.validateFields((err, values) => {
+        if(!err) {
+          const { tkh, tgh } = values;
+          api.dropCourse({ tkh, tgh, xh: this.userInfo.xh ,xq: this.nowTerm}).then(res => {
+            if(res.data.res.affectedRows === 1) {
+              this.$message.success('退课成功');
+              this.formDrop.resetFields();
+              this.loadCourseTable(this.nowTerm);
+              this.loadReportCard(this.nowTerm);
+            } else {
+              this.$message.error(res.data.res.message);
+              this.form.resetFields();
+            }
+          });
+        }
+      })
+    },
     handleSubmitOpen(e) {
       e.preventDefault();
       this.formOpen.validateFields((err, values) => {
@@ -436,6 +514,7 @@ export default {
     });
     api.getTerms().then(res => {
       const terms = res.data.res;
+      terms.sort(mySort);
       this.$store.commit('initTerm', {
         terms,
         nowTerm: terms[terms.length-1]
