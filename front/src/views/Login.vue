@@ -1,7 +1,7 @@
 <template>
   <div class="bg">
   <div class="login-container">
-    <h1>登录</h1>
+    <h1>{{ nowTerm }}学期选课系统登录</h1>
     <a-form
       id="components-form-demo-normal-login"
       :form="form"
@@ -54,16 +54,20 @@
 <script>
 // @ is an alias to /src
 import api from '@/api';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'login',
+  computed: {
+    ...mapGetters(['nowTerm'])
+  },
   methods: {
     handleSubmit(e){
       e.preventDefault();
       this.form.validateFields((err, values) => {
         if (!err) {
           api.login(values).then(res => {
-             const { role, userInfo } = res.data.res;
+            const { role, userInfo } = res.data.res;
             sessionStorage.setItem('accessToken', values.userName);
             this.$store.commit('setUserInfo', {
               userInfo,

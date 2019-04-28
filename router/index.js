@@ -69,11 +69,15 @@ router.get('/students', async (ctx) => {
 // 学期
 router.get('/terms', async ctx => {
   const terms = await Sql.terms();
-  const res = terms.map(value => value.xq);
+  const res = terms.map(value => value.term);
+  const nowTerm = terms[terms.length -1].term;
   ctx.response.status = 200;
   ctx.body = {
     code: 200,
-    res
+    res: {
+      terms: res,
+      nowTerm
+    }
   };
 })
 

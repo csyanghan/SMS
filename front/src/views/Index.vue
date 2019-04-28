@@ -24,12 +24,12 @@
         <a-layout-sider width="200" style="background: #fff">
           <a-menu
             mode="inline"
-            :defaultSelectedKeys="['1', '6']"
-            :defaultOpenKeys="['sub1', 'sub2']"
+            :defaultSelectedKeys="['1', '6', '3-1']"
+            :defaultOpenKeys="['sub1', 'sub2', 'sub3']"
             style="height: 100%"
             @click="clickItem"
           >
-            <a-sub-menu key="sub1" v-if="!isTeacher">
+            <a-sub-menu key="sub1" v-if="!isTeacher && !isAdmin">
               <span slot="title"><a-icon type="user" />课程信息与选课</span>
               <a-menu-item key="1">开课表</a-menu-item>
               <a-menu-item key="2">课程表</a-menu-item>
@@ -45,9 +45,19 @@
               <a-menu-item key="9">开课</a-menu-item>
               <a-menu-item key="10">课程表</a-menu-item>
             </a-sub-menu>
+            <a-sub-menu key="sub3" v-if="isAdmin">
+              <span slot="title"><a-icon type="user" />管理员控制台</span>
+              <a-menu-item key="3-1">开启关闭选课系统</a-menu-item>
+              <a-menu-item key="3-2">导入学生信息</a-menu-item>
+              <a-menu-item key="3-3">导入老师信息</a-menu-item>
+              <a-menu-item key="3-4">开启一个新学期</a-menu-item>
+            </a-sub-menu>
           </a-menu>
         </a-layout-sider>
-        <a-layout-content :style="{ padding: '0 24px', minHeight: '280px' }">
+        <a-layout-content :style="{ padding: '0 24px', minHeight: '280px' }" v-if="isAdmin">
+          <router-view ></router-view>
+        </a-layout-content>
+        <a-layout-content :style="{ padding: '0 24px', minHeight: '280px' }" v-if="!isAdmin">
           <a-table v-show="activeKey === '1'" :columns="openCoursesCoulmns" :dataSource="openCoursesData" :rowKey="record => (record.kh + record.gh)"></a-table>
           <a-table v-show="activeKey === '2'" :columns="openCoursesCoulmns" :dataSource="courseTableData" :rowKey="record => (record.kh + record.gh)"></a-table>
           <a-form
@@ -272,12 +282,16 @@ export default {
       if (this.userInfo && this.role) {
         return this.userInfo.xm + (this.isTeacher ? '老师' : '同学');
       }
+      return this.role;
     },
     isTeacher() {
       if (this.role === 'teacher') {
         this.activeKey = '6';
       }
       return this.role === 'teacher';
+    },
+    isAdmin() {
+      return this.role === 'admin';
     },
     chartData() {
       const data = this.reportCardData.map(item => {
@@ -299,6 +313,9 @@ export default {
     },
     userInfoTerm () {
       const { userInfo, nowTerm } = this;
+      if(!userInfo) {
+        return { nowTerm };
+      }
       return { userInfo, nowTerm };
     }
   },
@@ -306,6 +323,10 @@ export default {
     userInfoTerm: {
       handler: function (val) {
         console.log('this function', val)
+        if(!val.userInfo) {
+          console.log('admin');
+          return;
+        }
         if (val.nowTerm && !judgeJSObjectIsNull(val.userInfo) && val.userInfo.gh) {
           this.loadCourseTeacherTable(val.userInfo.gh, val.nowTerm);
           this.loadReportCardTeacher(val.userInfo.gh, val.nowTerm);
@@ -323,6 +344,11 @@ export default {
   methods: {
     clickItem({ key }) {
       this.activeKey = key;
+      if(this.isAdmin) {
+        this.$store.commit('changeAdminTab', {
+          tab: key
+        });
+      }
     },
     changeTerm(term) {
       this.$store.commit('setTerm', {
@@ -511,14 +537,6 @@ export default {
   mounted() {
     api.getClasses().then(res => {
       this.classes = res.data.res;
-    });
-    api.getTerms().then(res => {
-      const terms = res.data.res;
-      terms.sort(mySort);
-      this.$store.commit('initTerm', {
-        terms,
-        nowTerm: terms[terms.length-1]
-      });
     });
   },
 }

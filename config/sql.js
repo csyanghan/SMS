@@ -39,9 +39,17 @@ exports.login = async ({
           role: 'teacher'
         }
       }
-      return {
-        auth: 'fail'
-      };
+      const admin_sql = 'select * from admin where `username` = ?'
+      return query(admin_sql, [username]).then(res2 => {
+        if (res2.length === 1) {
+          return {
+            role: 'admin'
+          }
+        }
+        return {
+          auth: 'fail'
+        };
+      });
     });
   });
 }
@@ -79,7 +87,7 @@ exports.students = () => {
 
 // 学期
 exports.terms = () => {
-  const _sql = 'select distinct xq from openclass';
+  const _sql = 'select * from term order by id asc';
   return query(_sql);
 }
 

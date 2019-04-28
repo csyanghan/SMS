@@ -8,7 +8,8 @@ export default new Vuex.Store({
     userInfo: {},
     role: '',
     terms: [],
-    nowTerm: ''
+    nowTerm: '',
+    adminTab: '3-1'
   },
   mutations: {
     setUserInfo(state, payload) {
@@ -22,11 +23,12 @@ export default new Vuex.Store({
     setTerm(state, payload) {
       state.nowTerm = payload.nowTerm;
     },
+    changeAdminTab(state, payload) {
+      state.adminTab = payload.tab;
+    },
     clearAll(state) {
-      state.nowTerm = '';
       state.userInfo = {};
       state.role = '';
-      state.terms = [];
     }
   },
   getters: {
@@ -41,7 +43,8 @@ export default new Vuex.Store({
     },
     nowTerm: state => {
       return state.nowTerm;
-    }
+    },
+    adminTab: state => state.adminTab,
   },
   actions: {
 
