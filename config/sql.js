@@ -1,24 +1,4 @@
-const dbPool = require("./db");
-
-const query = (sql, values) => {
-  return new Promise((resolve, reject) => {
-    dbPool.getConnection((err, conn) => {
-      if(err) {
-        reject(err);
-      } else {
-        conn.query(sql, values, (err, rows) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(rows);
-          }
-          dbPool.releaseConnection(conn);
-        })
-      }
-    })
-  })
-}
-
+const query = require("./db");
 // 登录
 exports.login = async ({
   username
@@ -151,5 +131,11 @@ exports.getClass = () => {
 
 exports.manageGrade = ({gh, xq, xh, kh, pscj, kscj, zpcj }) => {
   const _sql = 'update xuankeTable set pscj = ?, kscj = ?, zpcj = ? where gh = ? and xq = ? and xh = ? and kh = ?';
-  return query(_sql, [pscj, kscj, zpcj, gh, xq, xh, kh]);
+  return query(_sql, [pscj, kscj, zpcj, gh, xq, xh, kh]).then(res => {
+    console.log(res);
+    if(res.affectedRows) {
+      const __sql = `call change_zpcj(${xh})`;
+      return query(__sql);
+    }
+  });
 }

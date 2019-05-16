@@ -12,4 +12,24 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-module.exports=pool;
+const query = (sql, values) => {
+  return new Promise((resolve, reject) => {
+    pool.getConnection((err, conn) => {
+      if(err) {
+        console.log(err, 'err')
+        reject(err);
+      } else {
+        conn.query(sql, values, (err, rows) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(rows);
+          }
+        });
+        pool.releaseConnection(conn);
+      }
+    });
+  });
+}
+
+module.exports=query;

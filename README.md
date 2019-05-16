@@ -109,8 +109,35 @@ eg:
       * 开设课程
       * 课程表
 
-    * 管理员
+## 存储过程与触发器
 
-      * 关闭和开启选课系统
-      * 导入一个老师或者学生信息
-      * 增加一个新学期
+  * 触发器
+
+    再老师更改成绩后，学生处显示自己所有课程的平均成绩
+
+    ```sql
+    create trigger tri_zpcj after update on xuankeTable for each row
+    begin
+      declare g_avg int;
+      set g_avg = (select avg(zpcj) from xuankeTable where xh=new.xh);
+      update student set grade=g_avg where xh=new.xh;
+    end
+    ```
+
+    查看触发器: `SHOW TRIGGERS`
+  
+  * 存储过程
+
+    老师输入平时成绩和考试成绩  调用存储过程更改总评成绩
+
+    ```sql
+    create procedure change_zpcj(in xhs varchar(256))
+    begin
+	    update xuankeTable set zpcj=(pscj *0.7 + kscj * 0.3) where xh=xhs;
+    end
+    ```
+
+    删除存储过程: `drop procedure name`
+
+    查看存储过程: `show procedure status like name`
+  

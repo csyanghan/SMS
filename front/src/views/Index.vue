@@ -140,7 +140,10 @@
               </a-button>
             </a-form-item>
           </a-form>
-          <a-table v-show="activeKey === '4'" :columns="reportCardColumns" :dataSource="reportCardData" :rowKey="record => (record.kh + record.zpcj)"></a-table>
+          <div v-show="activeKey === '4'">
+            <a-table :columns="reportCardColumns" :dataSource="reportCardData" :rowKey="record => (record.kh + record.zpcj)"></a-table>
+            <h2>平均成绩: {{userInfo.grade}}</h2>
+          </div>
           <ve-histogram :data="chartData" v-if="activeKey === '5'"></ve-histogram>
           <a-table v-show="activeKey === '6'" :columns="studentsColumns" :dataSource="studentsData" :rowKey="record => (record.xh)"></a-table>
           <div v-show="activeKey === '8'">
@@ -310,33 +313,12 @@ export default {
         columns,
         rows: data
       }
-    },
-    userInfoTerm () {
-      const { userInfo, nowTerm } = this;
-      if(!userInfo) {
-        return { nowTerm };
-      }
-      return { userInfo, nowTerm };
     }
   },
   watch: {
-    userInfoTerm: {
-      handler: function (val) {
-        console.log('this function', val)
-        if(!val.userInfo) {
-          console.log('admin');
-          return;
-        }
-        if (val.nowTerm && !judgeJSObjectIsNull(val.userInfo) && val.userInfo.gh) {
-          this.loadCourseTeacherTable(val.userInfo.gh, val.nowTerm);
-          this.loadReportCardTeacher(val.userInfo.gh, val.nowTerm);
-          this.loadStudents();
-        }
-        if(val.nowTerm && !judgeJSObjectIsNull(val.userInfo) && val.userInfo.xh) {
-          this.loadOpenCourse(val.nowTerm);
-          this.loadCourseTable(val.nowTerm);
-          this.loadReportCard(val.nowTerm);
-        }
+    userInfo: {
+      handler: function() {
+        this.initData();
       },
       deep: true
     }
@@ -505,8 +487,8 @@ export default {
           zpcj: target.zpcj
         };
         api.postManageGrade(params).then(res => {
-          console.log(res, 'manage');
           this.$message.success("修改成功");
+          this.loadReportCardTeacher(this.userInfo.gh, this.nowTerm);
         });
       }
     },
@@ -532,12 +514,28 @@ export default {
       sessionStorage.removeItem('accessToken');
       this.$message.success('退出登录成功');
       this.$router.push('/login');
+    },
+    initData() {
+      if(!this.userInfo) {
+        console.log('admin');
+      }
+      if (this.nowTerm && !judgeJSObjectIsNull(this.userInfo) && this.userInfo.gh) {
+        this.loadCourseTeacherTable(this.userInfo.gh, this.nowTerm);
+        this.loadReportCardTeacher(this.userInfo.gh, this.nowTerm);
+        this.loadStudents();
+      }
+      if(this.nowTerm && !judgeJSObjectIsNull(this.userInfo) && this.userInfo.xh) {
+        this.loadOpenCourse(this.nowTerm);
+        this.loadCourseTable(this.nowTerm);
+        this.loadReportCard(this.nowTerm);
+      }
     }
   },
   mounted() {
     api.getClasses().then(res => {
       this.classes = res.data.res;
     });
+    this.initData();
   },
 }
 </script>
