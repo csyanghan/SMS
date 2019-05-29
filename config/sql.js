@@ -19,17 +19,9 @@ exports.login = async ({
           role: 'teacher'
         }
       }
-      const admin_sql = 'select * from admin where `username` = ?'
-      return query(admin_sql, [username]).then(res2 => {
-        if (res2.length === 1) {
-          return {
-            role: 'admin'
-          }
-        }
-        return {
-          auth: 'fail'
-        };
-      });
+      return {
+        auth: 'fail'
+      };
     });
   });
 }

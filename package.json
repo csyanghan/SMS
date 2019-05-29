@@ -4,7 +4,8 @@
   "main": "app.js",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon --watch config --watch router app.js"
+    "dev": "nodemon --watch config --watch router app.js",
+    "test": "mocha"
   },
   "dependencies": {
     "koa": "^2.6.2",
@@ -16,6 +17,9 @@
     "sequelize": "^4.42.0"
   },
   "devDependencies": {
-    "nodemon": "^1.18.11"
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4",
+    "nodemon": "^1.18.11",
+    "supertest": "^4.0.2"
   }
 }

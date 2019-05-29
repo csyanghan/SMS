@@ -3,6 +3,7 @@ const bodyParser = require('koa-bodyparser');
 const logger = require('koa-logger');
 
 const app = new Koa();
+module.exports = app;
 app.use(bodyParser());
 app.use(logger());
 

@@ -8,7 +8,7 @@ router.post('/login', async (ctx) => {
   const res = await Sql.login({
     username: params.userName
   });
-  let code = res.auth ? 403 : 200;
+  let code = res.auth ? 401 : 200;
   ctx.response.status = code;
   ctx.body = {
     code: code,
